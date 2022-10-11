@@ -34,33 +34,29 @@ def get_links(soup):
         links.append(link)
     return links
 
-def load_posts(driver, links):
-    posts = []
-    for link in links:
-        search = r'https://www.blocket.se' + link
-        soup = get_data_from_search(driver, search, 'kIhjJa')
-        try:
-            title = soup.find('h1', class_='dGnKKn').text
-            price = soup.find('div', class_='kIhjJa').text
-            location = soup.find('a', class_='bEePwY').text
-            description = soup.find('div', class_='gLpiBo').text
-        except:
-            print(search)
-            title = ''
-            price = ''
-            location = ''
-            description = ''
+def load_post(driver, link):
+    search = r'https://www.blocket.se' + link
+    soup = get_data_from_search(driver, search, 'kIhjJa')
+    try:
+        title = soup.find('h1', class_='dGnKKn').text
+        price = soup.find('div', class_='kIhjJa').text
+        location = soup.find('a', class_='bEePwY').text
+        description = soup.find('div', class_='gLpiBo').text
+    except:
+        print(search)
+        title = ''
+        price = ''
+        location = ''
+        description = ''
 
-        post = {
-            'title': title,
-            'price': price,
-            'location': location,
-            'description': description,
-            'link': search
-        }
-        posts.append(post)
-        time.sleep(1)
-    return posts
+    post = {
+        'title': title,
+        'price': price,
+        'location': location,
+        'description': description,
+        'link': search
+    }
+    return post
 
 def write_to_json(json_name, posts):
     json_string = json.dumps(posts)
@@ -77,5 +73,13 @@ def scrape_data_to_json(searches, json_name):
     for search in searches:
         search_soup = get_data_from_search(driver, search, 'krgAt')
         links.extend(get_links(search_soup))
-    posts = load_posts(driver, links)
-    write_to_json(json_name,posts)
+    with open(json_name, 'r') as f:
+        json_data = json.load(f)
+    print(json_data)
+    json_links = [dic['link'] for dic in json_data]
+    print(json_links)
+    for link in links:
+        if (r'https://www.blocket.se'+link) not in json_links:
+            post = load_post(driver, link)
+            json_data.append(post)
+    write_to_json(json_name,json_data)

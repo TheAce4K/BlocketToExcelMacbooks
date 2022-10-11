@@ -11,9 +11,12 @@ def read_json(json_file):
 def get_data_from_json(json_content):
     clean_json = []
     for product in json_content:
-        title_match = re.search(r'(m1 (pro|max))|(M1 (pro|max))|(M1 (Pro|Max))', product['title'])
+        title_match = re.search(r'(m1 (pro|max|Pro|Max))|(M1 (pro|max|Pro|Max))|((14|16).?("|tum|Tum))', product['title'])
         if title_match:
-            name = title_match.group(0)
+            sz = re.search(r'(14|16).?("|tum|Tum)', product['title'])
+            if sz:
+                sz = sz.group(1)
+
             cpu = [re.search(r'(8|10).?[cC](?![. ]?[Ggm])', product['title']),
                    re.search(r'(8|10).?[cC](?![. ]?[Ggm])', product['description'])]
             if cpu[0]:
@@ -23,8 +26,8 @@ def get_data_from_json(json_content):
             else:
                 cpu_cores = ''
             gpu = [
-                re.search(r'(14|16|24|32) ?[cC]?( ?GPU| ?gpu) ?(?![. ]?[cCm])', product['title']),
-                re.search(r'(14|16|24|32) ?[cC]?( ?GPU| ?gpu) ?(?![. ]?[cCm])', product['description'])
+                re.search(r'(14|16|24|32) ?([cC])?(ores|ore)?( ?GPU| ?gpu) ?(?![. ]?[cCm])', product['title']),
+                re.search(r'(14|16|24|32) ?([cC])?(ores|ore)?( ?GPU| ?gpu) ?(?![. ]?[cCm])', product['description'])
             ]
             if gpu[0]:
                 gpu_cores = gpu[0].group(1)
@@ -44,7 +47,7 @@ def get_data_from_json(json_content):
                 ram_memory = ''
             item = {
                 'title': product['title'],
-                'name': name,
+                'size': sz,
                 'cpu_cores': cpu_cores,
                 'gpu_cores': gpu_cores,
                 'ram_memory': ram_memory,
